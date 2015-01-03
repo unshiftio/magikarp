@@ -67,3 +67,19 @@ Fragment.prototype.parse = function parse(url) {
   }).join('\\/') + '$');
 };
 
+/**
+ * Return a middleware layer which can be used for matching.
+ *
+ * @returns {Function}
+ * @api public
+ */
+Fragment.prototype.matches = function matches() {
+  return function match(req, res, next) {
+
+  };
+};
+
+//
+// Expose the module.
+//
+module.exports = Fragment;
