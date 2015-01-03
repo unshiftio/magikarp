@@ -16,6 +16,8 @@ var Magicarp = Supply.extend({
    * @api public
    */
   from: function from(directory) {
+    var magicarp = this;
+
     dollars.array.each(fs.readdirSync(directory), function each(filename) {
       if (
            '.js' !== path.extname(filename)
@@ -23,9 +25,23 @@ var Magicarp = Supply.extend({
       ) return /* It's not something that can be required. */;
 
       var fragment = require(path.join(directory, filename));
+      magicarp.use(fragment.matches());
     });
 
-    return this;
+    return magicarp;
+  },
+
+  /**
+   * @param {Request} req Incoming HTTP request.
+   * @param {Response} res Outgoing HTTP response.
+   * @param {Function} next Completion callback.
+   * @returns {Magicarp}
+   * @api public
+   */
+  run: function run(req, res, next) {
+    req.uri = req.uri || url.parse(req.url);
+
+    return this.each(req, res, next);
   }
 });
 
