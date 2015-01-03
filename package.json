@@ -20,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/unshiftio/magikarp/issues"
   },
-  "homepage": "https://github.com/unshiftio/magikarp"
+  "homepage": "https://github.com/unshiftio/magikarp",
+  "dependencies": {
+    "dollars": "0.0.x",
+    "supply": "0.0.x"
+  }
 }
