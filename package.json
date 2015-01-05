@@ -4,7 +4,10 @@
   "description": "A PLBBBBTTT A-PLBBBBBTTT A-PLBBBBTTT A-PLBBBTTT A-PLBBT",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha test.js",
+    "watch": "mocha --watch test.js",
+    "coverage": "istanbul cover ./node_modules/.bin/_mocha -- test.js",
+    "test-travis": "istanbul cover node_modules/.bin/_mocha --report lcovonly -- test.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +24,12 @@
     "url": "https://github.com/unshiftio/magikarp/issues"
   },
   "homepage": "https://github.com/unshiftio/magikarp",
+  "devDependencies": {
+    "assume": "0.0.x",
+    "istanbul": "0.3.x",
+    "mocha": "2.1.x",
+    "pre-commit": "0.0.x"
+  },
   "dependencies": {
     "dollars": "0.0.x",
     "supply": "0.0.x"
