@@ -7,29 +7,29 @@ var dollars = require('dollars')
  *
  * @constructor
  * @param {Fragment} and Previous fragment.
- * @param {RegularExpression} regexp Fragment we need to match.
+ * @param {Object} spec URL specification.
  * @api public
  */
-function Fragment(and, regexp) {
-  if (!this) return new Fragment();
+function Fragment(and, spec) {
+  if (!this) return new Fragment(and, spec);
 
-  this.regexp = regexp;
+  this.parsers = Object.create(null);
+  this.specification = spec;
   this.endpoints = [];
-  this.methods = {};
+  this.methods = [];
   this.and = and;
 }
 
 /**
+ * Add a new method/function which will be called for the application.
  *
- * @param {Function} fn
+ * @param {Function} fn Callback function.
  * @returns {Fragment}
  * @api public
  */
 dollars.array.each('get post put delete'.split(' '), function each(method) {
   Fragment.prototype[method] = function methodproxy(fn) {
-    if (!(method in this.methods)) {
-      this.methods[method] = new Supply();
-    }
+    this.methods.push({ method: method, fn: fn });
     return this;
   };
 });
@@ -47,6 +47,19 @@ Fragment.prototype.endpoint = function endpoint(url) {
   else this.endpoints.push(frag);
 
   return frag;
+};
+
+/**
+ * Add a new argument/param parser.
+ *
+ * @param {String} name Name of the param that needs to be parsed.
+ * @param {Function} parser The parser that needs to be called.
+ * @returns {Fragment}
+ * @api public
+ */
+Fragment.prototype.param = function param(name, parser) {
+  this.parsers[name] = parser;
+  return this;
 };
 
 /**
@@ -76,17 +89,31 @@ Fragment.prototype.parse = function parse(url) {
 };
 
 /**
- * Return a middleware layer which can be used for matching.
+ * Return a middleware layer which can be used for matching. In addition to that
+ * we also optimize our internals because we can :D.
  *
- * @param {Magicarp} magicarp Reference to margicarp
+ * @param {Magicarp} magicarp Reference to the margicarp instance.
  * @returns {Function}
  * @api public
  */
 Fragment.prototype.matches = function matches(magicarp) {
-  var frag = this;
+  var frag = this
+    , methods;
+
+  if (Array.isArray(this.methods)) {
+    methods = this.methods;
+
+    this.methods = Object.create(null);
+    methods.forEach(function methods(http) {
+      if (!(http.method in frag.methods)) {
+        frag.methods[http.method] = new Supply(magicarp);
+      }
+
+      frag.methods[http.method].use(http.fn);
+    });
+  }
 
   return function match(req, res, next) {
-
   };
 };
 
