@@ -7,7 +7,25 @@ var Fragment = require('./fragment')
   , url = require('url')
   , fs = require('fs');
 
+/**
+ * Magicarp: A PLBBBBTTT A-PLBBBBBTTT A-PLBBBBTTT A-PLBBBTTT A-PLBBT
+ *
+ * @constructor
+ * @param {Mixed} context The `this` value for every application we execute.
+ * @param {Object} options Additional configuration.
+ * @api public
+ */
 var Magicarp = Supply.extend({
+  /**
+   * Initialize the module.
+   *
+   * @param {Object} options
+   * @api private
+   */
+  initialize: function initialize(options) {
+    this.pathname = options.pathname || '/';
+  },
+
   /**
    * Load in API endpoints from a given directory.
    *
@@ -25,13 +43,15 @@ var Magicarp = Supply.extend({
       ) return /* It's not something that can be required. */;
 
       var fragment = require(path.join(directory, filename));
-      magicarp.use(fragment.matches());
+      magicarp.use(fragment.matches(magicarp));
     });
 
     return magicarp;
   },
 
   /**
+   * Attempt to find a middleware layer which can handle the request.
+   *
    * @param {Request} req Incoming HTTP request.
    * @param {Response} res Outgoing HTTP response.
    * @param {Function} next Completion callback.
@@ -40,6 +60,13 @@ var Magicarp = Supply.extend({
    */
   run: function run(req, res, next) {
     req.uri = req.uri || url.parse(req.url);
+    req.paths = req.uri.pathname.split('/');
+
+    //
+    // Fast case, we're not matching the root of this request so we can bail out
+    // directly. The rest of the matching will be done by the fragments.
+    //
+    if (this.pathname !== req.paths[0]) return next();
 
     return this.each(req, res, next);
   }
