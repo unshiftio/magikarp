@@ -41,39 +41,50 @@ dollars.array.each('get post put delete'.split(' '), function each(method) {
  * @api public
  */
 Fragment.prototype.endpoint = function endpoint(url) {
-  var fragment = new Fragment(this, this.parse(url));
+  var frag = new Fragment(this, this.parse(url));
 
-  if (this.and) this.and.endpoints.push(fragment);
-  else this.endpoints.push(fragment);
+  if (this.and) this.and.endpoints.push(frag);
+  else this.endpoints.push(frag);
 
-  return fragment;
+  return frag;
 };
 
 /**
  * Transform an URL to an regular expression we can use for testing.
  *
  * @param {String} url The URL we need to parse.
- * @returns {RegularExpression}
+ * @returns {Object} Specification.
  * @api public
  */
 Fragment.prototype.parse = function parse(url) {
   if (url.charAt(url.length - 1) === '/') url = url.slice(0, -1);
   if (url.charAt(0) === '/') url = url.slice(1);
+  url = url.split('/');
 
-  return new RegExp('^' + dollars.array.map(url.split('/'), function each(frag) {
+  var spec = Object.create(null);
+
+  spec.path = new RegExp('^' + dollars.array.map(url, function each(frag) {
     return frag.replace(/\{([^\{]+?)\}/g, function replace(match, key) {
+      if (!spec.params) spec.params = [];
+
+      spec.params.push(key);
       return '([a-zA-Z0-9-_~\\.%]+)';
     });
   }).join('\\/') + '$');
+
+  return spec;
 };
 
 /**
  * Return a middleware layer which can be used for matching.
  *
+ * @param {Magicarp} magicarp Reference to margicarp
  * @returns {Function}
  * @api public
  */
-Fragment.prototype.matches = function matches() {
+Fragment.prototype.matches = function matches(magicarp) {
+  var frag = this;
+
   return function match(req, res, next) {
 
   };
