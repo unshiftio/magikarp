@@ -111,8 +111,12 @@ Magikarp.Application = Application;
  * @api public
  */
 Magikarp.create = function create(name, module) {
-  if (module) return module.exports = new Application(name);
-  return new Application(name);
+  var app = new Application(name);
+
+  if (!module) return app;
+
+  module.exports = app;
+  return app;
 };
 
 //
