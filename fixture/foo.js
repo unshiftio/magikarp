@@ -1,5 +1,6 @@
 'use strict';
 
+/* istanbul ignore next */
 require('../')
 .create('foo', module)
   .post(function (req, res, next) {

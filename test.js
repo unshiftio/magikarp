@@ -417,7 +417,10 @@ describe('Magikarp', function () {
         next();
       });
 
-      magik.run(request, response, next);
+      /* istanbul ignore next */
+      magik.run(request, response, function () {
+        throw new Error('I should never be called');
+      });
     });
   });
 
