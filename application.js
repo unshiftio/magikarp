@@ -55,8 +55,9 @@ Application.prototype.use = function use(application) {
  * @returns {Application} The newly created Application
  * @api public
  */
-Application.prototype.endpoint = function endpoint(name) {
+Application.prototype.create = function create(name) {
   var application = new Application(name);
+
   return this.use(application);
 };
 
