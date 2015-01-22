@@ -15,6 +15,7 @@ function Application(name) {
 
   Roete.call(this, name);         // Inherit from route.
   this.sub = [];                  // Extra applications.
+  this.parent = null;             // Parent application.
 }
 
 Application.prototype = new Roete();
@@ -44,7 +45,9 @@ dollars.each('GET POST PUT DELETE'.split(' '), function each(method) {
  * @api public
  */
 Application.prototype.use = function use(application) {
+  application.parent = application.parent || this;
   this.sub.push(application);
+
   return application;
 };
 
@@ -59,6 +62,16 @@ Application.prototype.mount = function mount(name) {
   var application = new Application(name);
 
   return this.use(application);
+};
+
+/**
+ * Return a possible parent application so new routes can be added.
+ *
+ * @returns {Application}
+ * @api public
+ */
+Application.prototype.prev = Application.prototype.previous = function prev() {
+  return this.parent;
 };
 
 /**

@@ -233,6 +233,16 @@ describe('Application', function () {
     });
   });
 
+  describe('#previous', function () {
+    it('returns the app where we mounted upon', function () {
+      var res = app.mount('bar');
+
+      assume(res.prev()).equals(app);
+      assume(res.previous()).equals(app);
+      assume(res.parent).equals(app);
+    });
+  });
+
   describe('#which', function () {
     var bar, baz, foo;
 
