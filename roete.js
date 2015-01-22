@@ -77,8 +77,7 @@ Roete.prototype.match = function matching(url, method) {
     , match;
 
   if (slices) match = new Match(slices, url, roete.methods[method]);
-  if (!slices || (method && !(method in roete.methods))) return;
-  if (slices.length === 1) return match;
+  if (!slices || slices.length === 1) return match;
 
   return slices.slice(1).reduce(function reduce(memo, arg, index) {
     var param = roete.params[index];
