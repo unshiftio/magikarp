@@ -46,12 +46,14 @@ var Magikarp = Supply.extend({
     var magikarp = this;
 
     dollars.each(fs.readdirSync(directory), function each(filename) {
+      var app = path.join(directory, filename);
+
       if (
-           '.js' !== path.extname(filename)
-        && !fs.statSync(filename).isDirectory()
+           '.js' !== path.extname(app)
+        && !fs.statSync(app).isDirectory()
       ) return /* It's not something that can be required. */;
 
-      magikarp.add(require(path.join(directory, filename)));
+      magikarp.add(require(app));
     });
 
     return magikarp;
@@ -84,7 +86,6 @@ var Magikarp = Supply.extend({
     // directly. The rest of the matching will be done by the fragments.
     //
     if (req.url.indexOf(this.pathname) !== 0) {
-      console.log(this.pathname);
       return next(), this;
     }
 
