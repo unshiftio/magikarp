@@ -1,24 +1,24 @@
 'use strict';
 
 var dollars = require('dollars')
+  , Roete = require('./roete')
   , Supply = require('supply');
 
 /**
  *
  * @constructor
- * @param {Fragment} and Previous fragment.
- * @param {Object} spec URL specification.
+ * @param {String} name The pathname/namespace/URL that we should mount upon.
  * @api public
  */
-function Fragment(and, spec) {
-  if (!this) return new Fragment(and, spec);
+function Application(name) {
+  if (!this) return new Application(name);
 
-  this.parsers = Object.create(null);
-  this.specification = spec;
-  this.endpoints = [];
-  this.methods = [];
-  this.and = and;
+  Roete.call(this, name);         // Inherit from route.
+  this.sub = [];                  // Extra applications.
 }
+
+Application.prototype = new Roete();
+Application.prototype.constructor = Application;
 
 /**
  * Add a new method/function which will be called for the application.
@@ -27,97 +27,116 @@ function Fragment(and, spec) {
  * @returns {Fragment}
  * @api public
  */
-dollars.array.each('get post put delete'.split(' '), function each(method) {
-  Fragment.prototype[method] = function methodproxy(fn) {
-    this.methods.push({ method: method, fn: fn });
+dollars.each('GET POST PUT DELETE'.split(' '), function each(method) {
+  var application = Application.prototype;
+
+  application[method] = application[method.toLowerCase()] = function proxy(fn) {
+    this.methods.push({
+      method: method,
+      fn: fn
+    });
+
     return this;
   };
 });
 
 /**
+ * Directly pass in an existing Application instance and use that.
  *
- * @param {String} url URL we mount upon.
- * @returns {Fragment} The new fragment Application.
  * @api public
  */
-Fragment.prototype.endpoint = function endpoint(url) {
-  var frag = new Fragment(this, this.parse(url));
-
-  if (this.and) this.and.endpoints.push(frag);
-  else this.endpoints.push(frag);
-
-  return frag;
+Application.prototype.use = function use(application) {
+  this.sub.push(application);
+  return application;
 };
 
 /**
- * Add a new argument/param parser.
+ * Register a `sub` endpoint on the application.
  *
- * @param {String} name Name of the param that needs to be parsed.
- * @param {Function} parser The parser that needs to be called.
- * @returns {Fragment}
+ * @param {String} name The pathname/namespace/URL you want to mount upon.
+ * @returns {Application} The newly created Application
  * @api public
  */
-Fragment.prototype.param = function param(name, parser) {
-  this.parsers[name] = parser;
+Application.prototype.endpoint = function endpoint(name) {
+  var application = new Application(name);
+  return this.use(application);
+};
+
+/**
+ * Check if we are or have a matching application that can handle the given URL.
+ *
+ * @param {String} url Incoming pathname.
+ * @param {String} method HTTP method.
+ * @returns {Application}
+ * @api public
+ */
+Application.prototype.which = function which(url, method) {
+  var match = this.match(url, method)
+    , application
+    , matching;
+
+  if (!match) return;
+
+  //
+  // If we have a match but have sub-applications we need to check them first to
+  // see if they are matching.
+  //
+  for (var i = 0; i < this.sub.length; i++) {
+    application = this.sub[i];
+    matching = application.match(match.url, method);
+
+    if (matching) return matching;
+  }
+
+  return match;
+};
+
+/**
+ * Optimize the application structure.
+ *
+ * @param {Mixed} context The `this` value for the http methods.
+ * @returns {Application}
+ * @api public
+ */
+Application.prototype.optimize = function optimize(context) {
+  var app = this;
+
+  dollars.map(app.methods, function assign(handles, method) {
+    if (handles instanceof Supply) return handles;
+
+    var supply = new Supply(context);
+
+    dollars.each(handles, function each(fn) {
+      supply.use(fn);
+    });
+
+    return supply;
+  });
+
   return this;
 };
 
 /**
- * Transform an URL to an regular expression we can use for testing.
+ * Return a middleware layer which an handle the application.
  *
- * @param {String} url The URL we need to parse.
- * @returns {Object} Specification.
+ * @param {Mixed} context The `this` value for the http methods.
+ * @returns {Function} Middleware function.
  * @api public
  */
-Fragment.prototype.parse = function parse(url) {
-  if (url.charAt(url.length - 1) === '/') url = url.slice(0, -1);
-  if (url.charAt(0) === '/') url = url.slice(1);
-  url = url.split('/');
+Application.prototype.run = function run(context) {
+  var app = this.optimize(context);
 
-  var spec = Object.create(null);
+  return function middleware(req, res, next) {
+    var application = app.which(req.url, req.method);
 
-  spec.path = new RegExp('^' + dollars.array.map(url, function each(frag) {
-    return frag.replace(/\{([^\{]+?)\}/g, function replace(match, key) {
-      if (!spec.params) spec.params = [];
+    if (!application) return next();
 
-      spec.params.push(key);
-      return '([a-zA-Z0-9-_~\\.%]+)';
-    });
-  }).join('\\/') + '$');
-
-  return spec;
-};
-
-/**
- * Return a middleware layer which can be used for matching. In addition to that
- * we also optimize our internals because we can :D.
- *
- * @param {Magicarp} magicarp Reference to the margicarp instance.
- * @returns {Function}
- * @api public
- */
-Fragment.prototype.matches = function matches(magicarp) {
-  var frag = this
-    , methods;
-
-  if (Array.isArray(this.methods)) {
-    methods = this.methods;
-
-    this.methods = Object.create(null);
-    methods.forEach(function methods(http) {
-      if (!(http.method in frag.methods)) {
-        frag.methods[http.method] = new Supply(magicarp);
-      }
-
-      frag.methods[http.method].use(http.fn);
-    });
-  }
-
-  return function match(req, res, next) {
+    req.params = application.params;
+    application.method.each(req, res, next);
   };
 };
 
 //
-// Expose the module.
+// Expose the Application interface.
 //
-module.exports = Fragment;
+module.exports = Application;
