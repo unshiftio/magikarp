@@ -13,7 +13,7 @@
 [cover]: https://img.shields.io/coveralls/unshiftio/magikarp/master.svg?style=flat-square
 [irc]: https://img.shields.io/badge/IRC-irc.freenode.net%23unshift-00a8ff.svg?style=flat-square
 
-Magicarp is a library for building applications. Not normal applications, but
+Magikarp is a library for building applications. Not normal applications, but
 path (from URL's) based applications. It doesn't see URL's as routes but as
 application. Every piece of the path is an individual application and these
 applications can be shared, modulized and sliced up in any way you want.
