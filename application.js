@@ -140,7 +140,7 @@ Application.prototype.run = function run(context) {
 
     if (!application) return next();
 
-    req.params = application.params;
+    req.param = application.params;
     application.method.each(req, res, next);
   };
 };

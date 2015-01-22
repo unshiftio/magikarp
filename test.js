@@ -319,13 +319,13 @@ describe('Application', function () {
       middle(request, response, next);
     });
 
-    it('extracts the params and introduces them on the req', function (next) {
+    it('extracts the params and introduces them on the req.param', function (next) {
       next = assume.plan(3, next);
 
       app.endpoint('{bar}/{foo}/another').get(function (req, res, next) {
-        assume(req.params).is.a('object');
-        assume(req.params.foo).equals('world');
-        assume(req.params.bar).equals('hello');
+        assume(req.param).is.a('object');
+        assume(req.param.foo).equals('world');
+        assume(req.param.bar).equals('hello');
 
         next();
       });
