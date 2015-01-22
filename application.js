@@ -73,7 +73,12 @@ Application.prototype.which = function which(url, method) {
     , application
     , matching;
 
+  //
+  // 100% sure, no match as the URL's don't match.
+  // And 100% on direct match. These are the fast cases.
+  //
   if (!match) return;
+  if (!match.url && match.method) return match;
 
   //
   // If we have a match but have sub-applications we need to check them first to
@@ -83,10 +88,12 @@ Application.prototype.which = function which(url, method) {
     application = this.sub[i];
     matching = application.match(match.url, method);
 
-    if (matching) return matching;
+    if (matching && matching.method) {
+      return matching;
+    }
   }
 
-  return match;
+  return;
 };
 
 /**
@@ -109,6 +116,10 @@ Application.prototype.optimize = function optimize(context) {
     });
 
     return supply;
+  });
+
+  dollars.each(app.sub, function each(application) {
+    application.optimize(context);
   });
 
   return this;
