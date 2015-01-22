@@ -119,10 +119,45 @@ describe('Application', function () {
     assume(app).is.instanceOf(Roete);
   });
 
-  describe('#get', function () {
-    it('adds a get method', function () {
+  describe('#get, #post, #put, #delete', function () {
+    it('adds a #get method', function () {
+      assume(app.methods.GET).is.undefined();
+
       assume(app.get).is.a('function');
       assume(app.get(function () {})).equals(app);
+
+      assume(app.methods.GET).is.a('array');
+      assume(app.methods.GET).has.length(1);
+    });
+
+    it('adds a #post method', function () {
+      assume(app.methods.POST).is.undefined();
+
+      assume(app.post).is.a('function');
+      assume(app.post(function () {})).equals(app);
+
+      assume(app.methods.POST).is.a('array');
+      assume(app.methods.POST).has.length(1);
+    });
+
+    it('adds a #put method', function () {
+      assume(app.methods.PUT).is.undefined();
+
+      assume(app.put).is.a('function');
+      assume(app.put(function () {})).equals(app);
+
+      assume(app.methods.PUT).is.a('array');
+      assume(app.methods.PUT).has.length(1);
+    });
+
+    it('adds a #delete method', function () {
+      assume(app.methods.DELETE).is.undefined();
+
+      assume(app.delete).is.a('function');
+      assume(app.delete(function () {})).equals(app);
+
+      assume(app.methods.DELETE).is.a('array');
+      assume(app.methods.DELETE).has.length(1);
     });
   });
 
@@ -134,6 +169,23 @@ describe('Application', function () {
 
       app.optimize();
       assume(app.methods.GET).is.instanceOf(Supply);
+      assume(app.methods.GET).has.length(1);
+    });
+
+    it('can be called multiple times without side effects', function () {
+      app.get(function (req, res, next) {});
+      app.post(function (req, res, next) {});
+      app.delete(function (req, res, next) {});
+      app.put(function (req, res, next) {});
+
+      app.optimize();
+      app.optimize();
+      app.optimize();
+
+      assume(app.methods.DELETE).is.instanceOf(Supply);
+      assume(app.methods.POST).is.instanceOf(Supply);
+      assume(app.methods.GET).is.instanceOf(Supply);
+      assume(app.methods.PUT).is.instanceOf(Supply);
     });
 
     it('sets the given context as supply context', function () {
