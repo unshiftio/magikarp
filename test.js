@@ -90,3 +90,54 @@ describe('Roete', function () {
     });
   });
 });
+
+describe('Application', function () {
+  'use strict';
+
+  var Application = require('./application')
+    , Roete = require('./roete')
+    , assume = require('assume')
+    , Supply = require('supply')
+    , app;
+
+  beforeEach(function () {
+    app = new Application('foo');
+  });
+
+  it('is exposed a function', function () {
+    assume(Application).is.a('function');
+  });
+
+  it('can be constructed without `new` keyword', function () {
+    var app = Application('foo');
+
+    assume(app).is.instanceOf(Application);
+    assume(app.optimize).is.a('function');
+  });
+
+  it('inherits from Roete', function () {
+    assume(app).is.instanceOf(Roete);
+  });
+
+  describe('#get', function () {
+    it('adds a get method', function () {
+      assume(app.get).is.a('function');
+      assume(app.get(function () {})).equals(app);
+    });
+  });
+
+  describe('#optimize', function () {
+    it('transforms all `route.methods` in to Supplies', function () {
+      app.get(function (req, res, next) {});
+
+      assume(app.methods.GET).is.a('array');
+
+      app.optimize();
+      assume(app.methods.GET).is.instanceOf(Supply);
+    });
+
+    it('sets the given context as supply context', function () {
+      app.get(function (req, res, next) {});
+    });
+  });
+});

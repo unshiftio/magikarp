@@ -1,6 +1,6 @@
 'use strict';
 
-var Fragment = require('./fragment')
+var Application = require('./application')
   , dollars = require('dollars')
   , Supply = require('supply')
   , path = require('path')
@@ -42,8 +42,8 @@ var Magicarp = Supply.extend({
         && !fs.statSync(filename).isDirectory()
       ) return /* It's not something that can be required. */;
 
-      var fragment = require(path.join(directory, filename));
-      magicarp.use(fragment.matches(magicarp));
+      var application = require(path.join(directory, filename));
+      magicarp.use(application.run(magicarp));
     });
 
     return magicarp;
@@ -73,12 +73,12 @@ var Magicarp = Supply.extend({
 });
 
 /**
- * Fragment interface we implement for routing purposes.
+ * Application interface we implement for routing purposes.
  *
- * @type {Fragment}
+ * @type {Application}
  * @private
  */
-Magicarp.Fragment = Fragment;
+Magicarp.Application = Application;
 
 /**
  *
@@ -86,8 +86,8 @@ Magicarp.Fragment = Fragment;
  * @returns {Fragment}
  * @api public
  */
-Magicarp.splash = function splash(module) {
-  return module.exports = new Fragment();
+Magicarp.create = function create(module,) {
+  return module.exports = new Application();
 };
 
 //

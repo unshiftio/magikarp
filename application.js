@@ -31,10 +31,8 @@ dollars.each('GET POST PUT DELETE'.split(' '), function each(method) {
   var application = Application.prototype;
 
   application[method] = application[method.toLowerCase()] = function proxy(fn) {
-    this.methods.push({
-      method: method,
-      fn: fn
-    });
+    this.methods[method] = this.methods[method] || [];
+    this.methods[method].push(fn);
 
     return this;
   };
@@ -101,8 +99,8 @@ Application.prototype.which = function which(url, method) {
 Application.prototype.optimize = function optimize(context) {
   var app = this;
 
-  dollars.map(app.methods, function assign(handles, method) {
-    if (handles instanceof Supply) return handles;
+  app.methods = dollars.map(app.methods, function assign(handles, method) {
+    if (!Array.isArray(handles)) return handles;
 
     var supply = new Supply(context);
 
