@@ -194,9 +194,9 @@ describe('Application', function () {
     });
 
     it('should also optimize all subs', function () {
-      var sub = app.create('sub')
-        , subb = sub.create('subb')
-        , subbb = sub.create('subbb');
+      var sub = app.mount('sub')
+        , subb = sub.mount('subb')
+        , subbb = sub.mount('subbb');
 
       subbb.get(function () {});
       subb.get(function () {});
@@ -221,9 +221,9 @@ describe('Application', function () {
     });
   });
 
-  describe('#create', function () {
+  describe('#mount', function () {
     it('registers a new instance', function () {
-      var res = app.create('bar');
+      var res = app.mount('bar');
 
       assume(res).does.not.equals(app);
       assume(res).is.instanceOf(Application);
@@ -237,9 +237,9 @@ describe('Application', function () {
     var bar, baz, foo;
 
     beforeEach(function () {
-      bar = app.create('bar/{banana}/claw');
-      baz = app.create('baz');
-      foo = baz.create('foo');
+      bar = app.mount('bar/{banana}/claw');
+      baz = app.mount('baz');
+      foo = baz.mount('foo');
 
       bar.get(function () {});
       bar.post(function () {});
@@ -272,10 +272,10 @@ describe('Application', function () {
   });
 
   describe('#run', function () {
-    it('optimizes the created endpoint', function () {
-      var sub = app.create('sub')
-        , subb = sub.create('subb')
-        , subbb = sub.create('subbb');
+    it('optimizes the mount endpoint', function () {
+      var sub = app.mount('sub')
+        , subb = sub.mount('subb')
+        , subbb = sub.mount('subbb');
 
       subbb.get(function () {});
       subb.get(function () {});
@@ -323,7 +323,7 @@ describe('Application', function () {
     it('extracts the params and introduces them on the req.param', function (next) {
       next = assume.plan(3, next);
 
-      app.create('{bar}/{foo}/another').get(function (req, res, next) {
+      app.mount('{bar}/{foo}/another').get(function (req, res, next) {
         assume(req.param).is.a('object');
         assume(req.param.foo).equals('world');
         assume(req.param.bar).equals('hello');
@@ -371,7 +371,7 @@ describe('Magikarp', function () {
 
   describe('#add', function () {
     var app = new Application('appie')
-      , hein = app.create('hein');
+      , hein = app.mount('hein');
 
     it('chains', function () {
       assume(magik.add(app)).equals(magik);

@@ -52,10 +52,10 @@ Application.prototype.use = function use(application) {
  * Register a `sub` endpoint on the application.
  *
  * @param {String} name The pathname/namespace/URL you want to mount upon.
- * @returns {Application} The newly created Application
+ * @returns {Application} The newly mounted Application
  * @api public
  */
-Application.prototype.create = function create(name) {
+Application.prototype.mount = function mount(name) {
   var application = new Application(name);
 
   return this.use(application);

@@ -103,14 +103,14 @@ var Magikarp = Supply.extend({
 Magikarp.Application = Application;
 
 /**
- * Simple short hand to create a new Application.
+ * Simple short hand to mount a new Application.
  *
  * @param {String} name The name/path/URI of the application.
  * @param {Object} module Module API we should expose the fragment upon.
  * @returns {Application}
  * @api public
  */
-Magikarp.create = function create(name, module) {
+Magikarp.mount = function mount(name, module) {
   var app = new Application(name);
 
   if (!module) return app;
