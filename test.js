@@ -343,10 +343,11 @@ describe('Application', function () {
 describe('Magikarp', function () {
   'use strict';
 
-  var assume = require('assume')
+  var EventEmitter = require('events').EventEmitter
+    , assume = require('assume')
     , Magikarp = require('./')
     , Application = Magikarp.Application
-    , context = { foo: 'bar' }
+    , context = new EventEmitter()
     , magik;
 
   beforeEach(function () {
@@ -393,6 +394,30 @@ describe('Magikarp', function () {
       });
 
       magik.add(app).run({ url: '/appie/hein', method: 'GET'}, {}, next);
+    });
+  });
+
+  describe('#from', function () {
+    it('reads apps from directory', function () {
+      magik.from(require('path').join(__dirname, 'fixture'));
+      assume(magik.length).equals(2);
+    });
+
+    it('adds the applications', function (next) {
+      magik.from(require('path').join(__dirname, 'fixture'));
+
+      var request = { url: '/hello/world', method: 'GET' }
+        , response = {};
+
+      context.on('get:hello/world', function (req, res, done) {
+        assume(done).is.a('function');
+        assume(res).equals(response);
+        assume(req).equals(request);
+
+        next();
+      });
+
+      magik.run(request, response, next);
     });
   });
 });
