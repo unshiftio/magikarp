@@ -13,10 +13,11 @@ function Roete(url) {
   if (!this) return new Roete(url);
 
   this.parsers = {};    // Parameter parsers.
+  this.methods = {};    // HTTP methods we handle.
   this.params = [];     // Name of the parsers.
   this.path = null;     // The compiled Regular Expression.
 
-  this.parse(url);
+  if (url) this.parse(url);
 }
 
 /**
@@ -63,10 +64,11 @@ Roete.prototype.parse = function parse(url) {
  * Check if the route is matching the given URL.
  *
  * @param {String} url Pathname we need to match.
+ * @param {String} method HTTP method we accept.
  * @returns {String|Undefined} Matches URL.
  * @api public
  */
-Roete.prototype.match = function matching(url) {
+Roete.prototype.match = function matching(url, method) {
   if (url.charAt(url.length - 1) !== '/') url = url +'/';
   if (url.charAt(0) !== '/') url = '/'+ url;
 
@@ -74,8 +76,9 @@ Roete.prototype.match = function matching(url) {
     , roete = this
     , match;
 
-  if (slices) match = new Match(slices, url);
-  if (!slices || slices.length === 1) return match;
+  if (slices) match = new Match(slices, url, roete.methods[method]);
+  if (!slices || (method && !(method in roete.methods))) return;
+  if (slices.length === 1) return match;
 
   return slices.slice(1).reduce(function reduce(memo, arg, index) {
     var param = roete.params[index];
@@ -96,10 +99,11 @@ Roete.prototype.match = function matching(url) {
  * @param {String} url The URL that we matched.
  * @api private
  */
-function Match(slices, url) {
+function Match(slices, url, method) {
   this.url = url.slice(slices[0].length);
   this.match = slices[0];
   this.matches = slices;
+  this.method = method;
   this.params = {};
 }
 
