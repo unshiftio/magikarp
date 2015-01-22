@@ -4,6 +4,7 @@
   "description": "A PLBBBBTTT A-PLBBBBBTTT A-PLBBBBTTT A-PLBBBTTT A-PLBBT",
   "main": "index.js",
   "scripts": {
+    "100%": "istanbul check-coverage --statements 100 --functions 100 --lines 100 --branches 100",
     "test": "mocha test.js",
     "watch": "mocha --watch test.js",
     "coverage": "istanbul cover ./node_modules/.bin/_mocha -- test.js",
@@ -33,5 +34,6 @@
   "dependencies": {
     "dollars": "0.0.x",
     "supply": "0.0.x"
-  }
+  },
+  "pre-commit": ["coverage", "100%"]
 }
