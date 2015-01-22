@@ -39,7 +39,8 @@ describe('Roete', function () {
     { url: 'hello', matches: '/hello/' },
     { url: 'hello', matches: 'hello' },
     { url: 'hello', matches: '/hello/world/' },
-    { url: 'hello', matches: 'hello/world' }
+    { url: 'hello', matches: 'hello/world' },
+    { url: '/hello/{filename}.css', matches: '/hello/world.css' }
   ].forEach(function each(spec) {
     it('matches '+ spec.url +' with '+ spec.matches, function () {
       var route = new Roete(spec.url)

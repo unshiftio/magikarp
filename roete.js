@@ -1,7 +1,6 @@
 'use strict';
 
-var dollars = require('dollars')
-  , path = require('path');
+var dollars = require('dollars');
 
 /**
  * Roete (Route) matching.
@@ -48,8 +47,7 @@ Roete.prototype.parse = function parse(url) {
   url = url.split('/');
 
   var roete = this
-    , slash = '\\/'
-    , last = path.extname(url[url.length - 1]) ? '' : slash;
+    , slash = '\\/';
 
   //
   // Transform the {} placeholders to an all capturing regular expression so we
@@ -63,7 +61,7 @@ Roete.prototype.parse = function parse(url) {
     });
   });
 
-  roete.path = new RegExp('^'+ slash + url.join(slash) + last);
+  roete.path = new RegExp('^'+ slash + url.join(slash) + slash);
 
   return roete;
 };
