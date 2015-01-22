@@ -8,14 +8,14 @@ var Application = require('./application')
   , fs = require('fs');
 
 /**
- * Magicarp: A PLBBBBTTT A-PLBBBBBTTT A-PLBBBBTTT A-PLBBBTTT A-PLBBT
+ * Magikarp: A PLBBBBTTT A-PLBBBBBTTT A-PLBBBBTTT A-PLBBBTTT A-PLBBT
  *
  * @constructor
  * @param {Mixed} context The `this` value for every application we execute.
  * @param {Object} options Additional configuration.
  * @api public
  */
-var Magicarp = Supply.extend({
+var Magikarp = Supply.extend({
   /**
    * Initialize the module.
    *
@@ -30,23 +30,33 @@ var Magicarp = Supply.extend({
    * Load in API endpoints from a given directory.
    *
    * @param {String} directory The directory we should search.
-   * @returns {Magicarp}
+   * @returns {Magikarp}
    * @api public
    */
   from: function from(directory) {
-    var magicarp = this;
+    var magikarp = this;
 
-    dollars.array.each(fs.readdirSync(directory), function each(filename) {
+    dollars.each(fs.readdirSync(directory), function each(filename) {
       if (
            '.js' !== path.extname(filename)
         && !fs.statSync(filename).isDirectory()
       ) return /* It's not something that can be required. */;
 
-      var application = require(path.join(directory, filename));
-      magicarp.use(application.run(magicarp));
+      magikarp.add(require(path.join(directory, filename)));
     });
 
-    return magicarp;
+    return magikarp;
+  },
+
+  /**
+   * Add a new application that still needs to be initialized.
+   *
+   * @param {Application} application The application we want to use.
+   * @param {Magikarp}
+   * @api public
+   */
+  add: function add(application) {
+    return this.use(application.run(this));
   },
 
   /**
@@ -55,12 +65,11 @@ var Magicarp = Supply.extend({
    * @param {Request} req Incoming HTTP request.
    * @param {Response} res Outgoing HTTP response.
    * @param {Function} next Completion callback.
-   * @returns {Magicarp}
+   * @returns {Magikarp}
    * @api public
    */
   run: function run(req, res, next) {
     req.uri = req.uri || url.parse(req.url);
-    req.paths = req.uri.pathname.split('/');
 
     //
     // Fast case, we're not matching the root of this request so we can bail out
@@ -76,21 +85,24 @@ var Magicarp = Supply.extend({
  * Application interface we implement for routing purposes.
  *
  * @type {Application}
- * @private
+ * @public
  */
-Magicarp.Application = Application;
+Magikarp.Application = Application;
 
 /**
+ * Simple short hand to create a new Application.
  *
+ * @param {String} name The name/path/URI of the application.
  * @param {Object} module Module API we should expose the fragment upon.
- * @returns {Fragment}
+ * @returns {Application}
  * @api public
  */
-Magicarp.create = function create(module,) {
-  return module.exports = new Application();
+Magikarp.create = function create(name, module) {
+  if (module) return module.exports = new Application(name);
+  return new Application(name);
 };
 
 //
 // Expose the API.
 //
-module.exports = Magicarp;
+module.exports = Magikarp;
