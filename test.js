@@ -32,19 +32,6 @@ describe('Roete', function () {
     assume(res.match).equals('/foo/');
   });
 
-  it('only returns the match if we also match the supplied method', function () {
-    var route = new Roete('foo')
-      , res = route.match('foo/bar', 'GET');
-
-    assume(res).is.undefined();
-
-    route.methods.GET = {};
-    res = route.match('foo/bar', 'GET');
-
-    assume(res).is.instanceOf(Roete.Match);
-    assume(res.method).equals(route.methods.GET);
-  });
-
   [
     { url: '/foo', matches: '/foo/' },
     { url: '/{hello}/{world}/', matches: '/hello/mom/' },
@@ -91,6 +78,7 @@ describe('Roete', function () {
   });
 });
 
+/* istanbul ignore next */
 describe('Application', function () {
   'use strict';
 
@@ -202,6 +190,83 @@ describe('Application', function () {
 
       app.optimize(context);
       app.which('/foo', 'GET').method.each('foo', 'bar');
+    });
+
+    it('should also optimize all subs', function () {
+      var sub = app.endpoint('sub')
+        , subb = sub.endpoint('subb')
+        , subbb = sub.endpoint('subbb');
+
+      subbb.get(function () {});
+      subb.get(function () {});
+      sub.get(function () {});
+      app.get(function () {});
+
+      app.optimize();
+
+      assume(subbb.methods.GET).is.instanceOf(Supply);
+      assume(subb.methods.GET).is.instanceOf(Supply);
+      assume(sub.methods.GET).is.instanceOf(Supply);
+      assume(app.methods.GET).is.instanceOf(Supply);
+    });
+  });
+
+  describe('#use', function () {
+    var sub = new Application('/bar/');
+
+    it('adds new sub application', function () {
+      assume(app.use(sub)).equals(sub);
+      assume(app.sub[0]).equals(sub);
+    });
+  });
+
+  describe('#endpoint', function () {
+    it('registers a new endpoint', function () {
+      var res = app.endpoint('bar');
+
+      assume(res).does.not.equals(app);
+      assume(res).is.instanceOf(Application);
+      assume(res).equals(app.sub[0]);
+
+      assume(!!res.match('/bar/')).is.true();
+    });
+  });
+
+  describe('#which', function () {
+    var bar, baz, foo;
+
+    beforeEach(function () {
+      bar = app.endpoint('bar/{banana}/claw');
+      baz = app.endpoint('baz');
+      foo = baz.endpoint('foo');
+
+      bar.get(function () {});
+      bar.post(function () {});
+      baz.get(function () {});
+      foo.get(function () {});
+
+      app.optimize();
+    });
+
+    it('finds routes based upon the given url and method', function () {
+      var found = app.which('/foo/baz', 'GET');
+
+      assume(found).is.not.undefined();
+      assume(found).instanceOf(Roete.Match);
+      assume(found.method).equals(baz.methods.GET);
+    });
+
+    it('returns undefined for non matches', function () {
+      app.get(function () {});
+
+      assume(app.which('lol', 'GET')).is.undefined();
+      assume(app.which('/foo/unknown', 'GET')).is.undefined();
+      assume(app.which('/foo/bar', 'GET')).is.undefined();
+      assume(app.which('/foo', 'POST')).is.undefined();
+      assume(app.which('/foo', 'GET')).is.not.undefined();
+      assume(app.which('/foo/bar/something/claw', 'GET')).is.not.undefined();
+      assume(app.which('/foo/bar/something/claw', 'POST')).is.not.undefined();
+      assume(app.which('/foo/bar/something/claw', 'DELETE')).is.undefined();
     });
   });
 });
