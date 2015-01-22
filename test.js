@@ -344,7 +344,18 @@ describe('Magikarp', function () {
   'use strict';
 
   var assume = require('assume')
-    , Magikarp = require('./');
+    , Magikarp = require('./')
+    , Application = Magikarp.Application
+    , context = { foo: 'bar' }
+    , magik;
+
+  beforeEach(function () {
+    magik = new Magikarp(context);
+  });
+
+  afterEach(function () {
+    magik.destroy();
+  });
 
   it('is exported as function', function () {
     assume(Magikarp).is.a('function');
@@ -355,5 +366,33 @@ describe('Magikarp', function () {
 
     assume(magik.pathname).equals('/foo');
     assume(magik.from).is.a('function');
+  });
+
+  describe('#add', function () {
+    var app = new Application('appie')
+      , hein = app.endpoint('hein');
+
+    it('chains', function () {
+      assume(magik.add(app)).equals(magik);
+    });
+
+    it('adds the application as middleware', function () {
+      assume(magik.layers).has.length(0);
+      magik.add(app);
+      assume(magik.layers).has.length(1);
+    });
+
+    it('sets the correct context', function (next) {
+      next = assume.plan(2, next);
+
+      hein.get(function get(req, res, next) {
+        assume(this).equals(context);
+        assume(req.param).is.a('object');
+
+        next();
+      });
+
+      magik.add(app).run({ url: '/appie/hein', method: 'GET'}, {}, next);
+    });
   });
 });

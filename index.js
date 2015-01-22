@@ -65,7 +65,8 @@ var Magikarp = Supply.extend({
    * @api public
    */
   add: function add(application) {
-    return this.use(application.run(this));
+    this.use(application.run(this.provider));
+    return this;
   },
 
   /**
@@ -78,15 +79,17 @@ var Magikarp = Supply.extend({
    * @api public
    */
   run: function run(req, res, next) {
-    req.uri = req.uri || url.parse(req.url);
-
     //
     // Fast case, we're not matching the root of this request so we can bail out
     // directly. The rest of the matching will be done by the fragments.
     //
-    if (this.pathname !== req.paths[0]) return next();
+    if (req.url.indexOf(this.pathname) !== 0) {
+      console.log(this.pathname);
+      return next(), this;
+    }
 
-    return this.each(req, res, next);
+    this.each(req, res, next);
+    return this;
   }
 });
 
