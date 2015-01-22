@@ -15,6 +15,14 @@ describe('Roete', function () {
     assume(res).is.instanceOf(Roete.Match);
   });
 
+  it('only parses when supplied with URL', function () {
+    var route = new Roete();
+
+    assume(route.path).is.a('null');
+    route.parse('foo');
+    assume(route.path).is.a('regexp');
+  });
+
   it('contains the rest of URL', function () {
     var route = new Roete('foo')
       , res = route.match('foo/bar');
@@ -22,6 +30,19 @@ describe('Roete', function () {
     assume(res.url).contains('bar');
     assume(res.url).does.not.contains('foo');
     assume(res.match).equals('/foo/');
+  });
+
+  it('only returns the match if we also match the supplied method', function () {
+    var route = new Roete('foo')
+      , res = route.match('foo/bar', 'GET');
+
+    assume(res).is.undefined();
+
+    route.methods.GET = {};
+    res = route.match('foo/bar', 'GET');
+
+    assume(res).is.instanceOf(Roete.Match);
+    assume(res.method).equals(route.methods.GET);
   });
 
   [
