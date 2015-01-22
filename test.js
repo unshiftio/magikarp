@@ -188,8 +188,20 @@ describe('Application', function () {
       assume(app.methods.PUT).is.instanceOf(Supply);
     });
 
-    it('sets the given context as supply context', function () {
-      app.get(function (req, res, next) {});
+    it('sets the given context as supply context', function (next) {
+      var context = { foo: 'bar' };
+
+      app.get(function (req, res, done) {
+        assume(done).is.a('function');
+        assume(this).equals(context);
+        assume(req).equals('foo');
+        assume(res).equals('bar');
+
+        next();
+      });
+
+      app.optimize(context);
+      app.which('/foo', 'GET').method.each('foo', 'bar');
     });
   });
 });
