@@ -16,6 +16,15 @@ var Application = require('./application')
  * @api public
  */
 var Magikarp = Supply.extend({
+  constructor: function constr(context, options) {
+    if (!this) return new Magikarp(context, options);
+
+    //
+    // Initialize supply.
+    //
+    Supply.prototype.constructor.apply(this, arguments);
+  },
+
   /**
    * Initialize the module.
    *

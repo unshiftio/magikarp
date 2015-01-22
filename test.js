@@ -339,3 +339,21 @@ describe('Application', function () {
     });
   });
 });
+
+describe('Magikarp', function () {
+  'use strict';
+
+  var assume = require('assume')
+    , Magikarp = require('./');
+
+  it('is exported as function', function () {
+    assume(Magikarp).is.a('function');
+  });
+
+  it('can be constructed without `new` keyword', function () {
+    var magik = Magikarp(null, { pathname: '/foo' });
+
+    assume(magik.pathname).equals('/foo');
+    assume(magik.from).is.a('function');
+  });
+});
