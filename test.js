@@ -269,4 +269,72 @@ describe('Application', function () {
       assume(app.which('/foo/bar/something/claw', 'DELETE')).is.undefined();
     });
   });
+
+  describe('#run', function () {
+    it('optimizes the endpoints', function () {
+      var sub = app.endpoint('sub')
+        , subb = sub.endpoint('subb')
+        , subbb = sub.endpoint('subbb');
+
+      subbb.get(function () {});
+      subb.get(function () {});
+      sub.get(function () {});
+      app.get(function () {});
+
+      app.run();
+
+      assume(subbb.methods.GET).is.instanceOf(Supply);
+      assume(subb.methods.GET).is.instanceOf(Supply);
+      assume(sub.methods.GET).is.instanceOf(Supply);
+      assume(app.methods.GET).is.instanceOf(Supply);
+    });
+
+    it('returns a middleware function', function () {
+      assume(app.run()).is.a('function');
+      assume(app.run()).has.length(3);
+    });
+
+    it('calls the callback if nothing matches', function (next) {
+      app.get(function () { });
+
+      var middle = app.run();
+
+      middle({ url: '/foo/bar', method: 'GET' }, {}, next);
+    });
+
+    it('calls the route with req/res', function (next) {
+      next = assume.plan(2, next);
+
+      app.get(function (req, res, next) {
+        assume(req).equals(request);
+        assume(res).equals(response);
+
+        next();
+      });
+
+      var request = { url: '/foo', method: 'GET' }
+        , middle = app.run()
+        , response = {};
+
+      middle(request, response, next);
+    });
+
+    it('extracts the params and introduces them on the req', function (next) {
+      next = assume.plan(3, next);
+
+      app.endpoint('{bar}/{foo}/another').get(function (req, res, next) {
+        assume(req.params).is.a('object');
+        assume(req.params.foo).equals('world');
+        assume(req.params.bar).equals('hello');
+
+        next();
+      });
+
+      var request = { url: '/foo/hello/world/another', method: 'GET' }
+        , middle = app.run()
+        , response = {};
+
+      middle(request, response, next);
+    });
+  });
 });
