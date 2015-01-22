@@ -420,4 +420,11 @@ describe('Magikarp', function () {
       magik.run(request, response, next);
     });
   });
+
+  describe('#run', function () {
+    it('calls the callback when we have no match on the given path', function (next) {
+      magik.pathname = '/foo';
+      magik.run({ url: '/bar' }, {}, next);
+    });
+  });
 });
