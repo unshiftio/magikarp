@@ -32,7 +32,6 @@
     "pre-commit": "0.0.x"
   },
   "dependencies": {
-    "dollars": "0.0.x",
     "supply": "0.0.x"
   },
   "pre-commit": ["coverage", "100%"]
