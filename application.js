@@ -14,7 +14,8 @@ function Application(name) {
   if (!this) return new Application(name);
 
   Roete.call(this, name);         // Inherit from route.
-  this.sub = [];                  // Extra applications.
+
+  this._sub = [];                  // Extra applications.
   this.parent = null;             // Parent application.
 }
 
@@ -32,8 +33,8 @@ dollars.each('GET POST PUT DELETE'.split(' '), function each(method) {
   var application = Application.prototype;
 
   application[method] = application[method.toLowerCase()] = function proxy(fn) {
-    this.methods[method] = this.methods[method] || [];
-    this.methods[method].push(fn);
+    this._methods[method] = this._methods[method] || [];
+    this._methods[method].push(fn);
 
     return this;
   };
@@ -42,11 +43,13 @@ dollars.each('GET POST PUT DELETE'.split(' '), function each(method) {
 /**
  * Directly pass in an existing Application instance and use that.
  *
+ * @param {Application} application Sub Application
+ * @returns {Application} The added application.
  * @api public
  */
-Application.prototype.use = function use(application) {
+Application.prototype.mount = function mount(application) {
   application.parent = application.parent || this;
-  this.sub.push(application);
+  this._sub.push(application);
 
   return application;
 };
@@ -58,10 +61,10 @@ Application.prototype.use = function use(application) {
  * @returns {Application} The newly mounted Application
  * @api public
  */
-Application.prototype.mount = function mount(name) {
+Application.prototype.path = function path(name) {
   var application = new Application(name);
 
-  return this.use(application);
+  return this.mount(application);
 };
 
 /**
@@ -98,8 +101,8 @@ Application.prototype.which = function which(url, method) {
   // If we have a match but have sub-applications we need to check them first to
   // see if they are matching.
   //
-  for (var i = 0; i < this.sub.length; i++) {
-    application = this.sub[i];
+  for (var i = 0; i < this._sub.length; i++) {
+    application = this._sub[i];
     matching = application.match(match.url, method);
 
     if (matching && matching.method) {
@@ -120,7 +123,7 @@ Application.prototype.which = function which(url, method) {
 Application.prototype.optimize = function optimize(context) {
   var app = this;
 
-  app.methods = dollars.map(app.methods, function assign(handles, method) {
+  app._methods = dollars.map(app._methods, function assign(handles, method) {
     if (!Array.isArray(handles)) return handles;
 
     var supply = new Supply(context);
@@ -132,7 +135,7 @@ Application.prototype.optimize = function optimize(context) {
     return supply;
   });
 
-  dollars.each(app.sub, function each(application) {
+  dollars.each(app._sub, function each(application) {
     application.optimize(context);
   });
 

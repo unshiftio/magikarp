@@ -12,10 +12,10 @@ var dollars = require('dollars');
 function Roete(url) {
   if (!this) return new Roete(url);
 
-  this.parsers = {};    // Parameter parsers.
-  this.methods = {};    // HTTP methods we handle.
-  this.params = [];     // Name of the parsers.
-  this.path = null;     // The compiled Regular Expression.
+  this._parsers = {};    // Parameter parsers.
+  this._methods = {};    // HTTP methods we handle.
+  this._params = [];     // Name of the parsers.
+  this._path = null;     // The compiled Regular Expression.
 
   if (url) this.parse(url);
 }
@@ -29,7 +29,7 @@ function Roete(url) {
  * @api public
  */
 Roete.prototype.param = function param(name, fn) {
-  this.parsers[name] = fn;
+  this._parsers[name] = fn;
   return this;
 };
 
@@ -55,13 +55,13 @@ Roete.prototype.parse = function parse(url) {
   //
   url = dollars.array.map(url, function each(frag) {
     return frag.replace(/\{([^\{]+?)\}/g, function replace(match, key) {
-      roete.params.push(key);
+      roete._params.push(key);
 
       return '([a-zA-Z0-9-_~\\.%]+)';
     });
   });
 
-  roete.path = new RegExp('^'+ slash + url.join(slash) + slash);
+  roete._path = new RegExp('^'+ slash + url.join(slash) + slash);
 
   return roete;
 };
@@ -78,18 +78,18 @@ Roete.prototype.match = function matching(url, method) {
   if (url.charAt(url.length - 1) !== '/') url = url +'/';
   if (url.charAt(0) !== '/') url = '/'+ url;
 
-  var slices = this.path.exec(url)
+  var slices = this._path.exec(url)
     , roete = this
     , match;
 
-  if (slices) match = new Match(slices, url, roete.methods[method]);
+  if (slices) match = new Match(slices, url, roete._methods[method]);
   if (!slices || slices.length === 1) return match;
 
   return slices.slice(1).reduce(function reduce(memo, arg, index) {
-    var param = roete.params[index];
+    var param = roete._params[index];
 
-    match.params[param] = roete.parsers[param]
-    ? roete.parsers[param](arg)
+    match.params[param] = roete._parsers[param]
+    ? roete._parsers[param](arg)
     : arg;
 
     return match;

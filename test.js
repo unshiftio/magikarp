@@ -18,9 +18,9 @@ describe('Roete', function () {
   it('only parses when supplied with URL', function () {
     var route = new Roete();
 
-    assume(route.path).is.a('null');
+    assume(route._path).is.a('null');
     route.parse('foo');
-    assume(route.path).is.a('regexp');
+    assume(route._path).is.a('regexp');
   });
 
   it('contains the rest of URL', function () {
@@ -110,43 +110,43 @@ describe('Application', function () {
 
   describe('#get, #post, #put, #delete', function () {
     it('adds a #get method', function () {
-      assume(app.methods.GET).is.undefined();
+      assume(app._methods.GET).is.undefined();
 
       assume(app.get).is.a('function');
       assume(app.get(function () {})).equals(app);
 
-      assume(app.methods.GET).is.a('array');
-      assume(app.methods.GET).has.length(1);
+      assume(app._methods.GET).is.a('array');
+      assume(app._methods.GET).has.length(1);
     });
 
     it('adds a #post method', function () {
-      assume(app.methods.POST).is.undefined();
+      assume(app._methods.POST).is.undefined();
 
       assume(app.post).is.a('function');
       assume(app.post(function () {})).equals(app);
 
-      assume(app.methods.POST).is.a('array');
-      assume(app.methods.POST).has.length(1);
+      assume(app._methods.POST).is.a('array');
+      assume(app._methods.POST).has.length(1);
     });
 
     it('adds a #put method', function () {
-      assume(app.methods.PUT).is.undefined();
+      assume(app._methods.PUT).is.undefined();
 
       assume(app.put).is.a('function');
       assume(app.put(function () {})).equals(app);
 
-      assume(app.methods.PUT).is.a('array');
-      assume(app.methods.PUT).has.length(1);
+      assume(app._methods.PUT).is.a('array');
+      assume(app._methods.PUT).has.length(1);
     });
 
     it('adds a #delete method', function () {
-      assume(app.methods.DELETE).is.undefined();
+      assume(app._methods.DELETE).is.undefined();
 
       assume(app.delete).is.a('function');
       assume(app.delete(function () {})).equals(app);
 
-      assume(app.methods.DELETE).is.a('array');
-      assume(app.methods.DELETE).has.length(1);
+      assume(app._methods.DELETE).is.a('array');
+      assume(app._methods.DELETE).has.length(1);
     });
   });
 
@@ -154,11 +154,11 @@ describe('Application', function () {
     it('transforms all `route.methods` in to Supplies', function () {
       app.get(function (req, res, next) {});
 
-      assume(app.methods.GET).is.a('array');
+      assume(app._methods.GET).is.a('array');
 
       app.optimize();
-      assume(app.methods.GET).is.instanceOf(Supply);
-      assume(app.methods.GET).has.length(1);
+      assume(app._methods.GET).is.instanceOf(Supply);
+      assume(app._methods.GET).has.length(1);
     });
 
     it('can be called multiple times without side effects', function () {
@@ -171,10 +171,10 @@ describe('Application', function () {
       app.optimize();
       app.optimize();
 
-      assume(app.methods.DELETE).is.instanceOf(Supply);
-      assume(app.methods.POST).is.instanceOf(Supply);
-      assume(app.methods.GET).is.instanceOf(Supply);
-      assume(app.methods.PUT).is.instanceOf(Supply);
+      assume(app._methods.DELETE).is.instanceOf(Supply);
+      assume(app._methods.POST).is.instanceOf(Supply);
+      assume(app._methods.GET).is.instanceOf(Supply);
+      assume(app._methods.PUT).is.instanceOf(Supply);
     });
 
     it('sets the given context as supply context', function (next) {
@@ -194,9 +194,9 @@ describe('Application', function () {
     });
 
     it('should also optimize all subs', function () {
-      var sub = app.mount('sub')
-        , subb = sub.mount('subb')
-        , subbb = sub.mount('subbb');
+      var sub = app.path('sub')
+        , subb = sub.path('subb')
+        , subbb = sub.path('subbb');
 
       subbb.get(function () {});
       subb.get(function () {});
@@ -205,29 +205,29 @@ describe('Application', function () {
 
       app.optimize();
 
-      assume(subbb.methods.GET).is.instanceOf(Supply);
-      assume(subb.methods.GET).is.instanceOf(Supply);
-      assume(sub.methods.GET).is.instanceOf(Supply);
-      assume(app.methods.GET).is.instanceOf(Supply);
-    });
-  });
-
-  describe('#use', function () {
-    var sub = new Application('/bar/');
-
-    it('adds new sub application', function () {
-      assume(app.use(sub)).equals(sub);
-      assume(app.sub[0]).equals(sub);
+      assume(subbb._methods.GET).is.instanceOf(Supply);
+      assume(subb._methods.GET).is.instanceOf(Supply);
+      assume(sub._methods.GET).is.instanceOf(Supply);
+      assume(app._methods.GET).is.instanceOf(Supply);
     });
   });
 
   describe('#mount', function () {
+    var sub = new Application('/bar/');
+
+    it('adds new sub application', function () {
+      assume(app.mount(sub)).equals(sub);
+      assume(app._sub[0]).equals(sub);
+    });
+  });
+
+  describe('#path', function () {
     it('registers a new instance', function () {
-      var res = app.mount('bar');
+      var res = app.path('bar');
 
       assume(res).does.not.equals(app);
       assume(res).is.instanceOf(Application);
-      assume(res).equals(app.sub[0]);
+      assume(res).equals(app._sub[0]);
 
       assume(!!res.match('/bar/')).is.true();
     });
@@ -235,7 +235,7 @@ describe('Application', function () {
 
   describe('#previous', function () {
     it('returns the app where we mounted upon', function () {
-      var res = app.mount('bar');
+      var res = app.path('bar');
 
       assume(res.prev()).equals(app);
       assume(res.previous()).equals(app);
@@ -247,9 +247,9 @@ describe('Application', function () {
     var bar, baz, foo;
 
     beforeEach(function () {
-      bar = app.mount('bar/{banana}/claw');
-      baz = app.mount('baz');
-      foo = baz.mount('foo');
+      bar = app.path('bar/{banana}/claw');
+      baz = app.path('baz');
+      foo = baz.path('foo');
 
       bar.get(function () {});
       bar.post(function () {});
@@ -264,7 +264,7 @@ describe('Application', function () {
 
       assume(found).is.not.undefined();
       assume(found).instanceOf(Roete.Match);
-      assume(found.method).equals(baz.methods.GET);
+      assume(found.method).equals(baz._methods.GET);
     });
 
     it('returns undefined for non matches', function () {
@@ -283,9 +283,9 @@ describe('Application', function () {
 
   describe('#run', function () {
     it('optimizes the mount endpoint', function () {
-      var sub = app.mount('sub')
-        , subb = sub.mount('subb')
-        , subbb = sub.mount('subbb');
+      var sub = app.path('sub')
+        , subb = sub.path('subb')
+        , subbb = sub.path('subbb');
 
       subbb.get(function () {});
       subb.get(function () {});
@@ -294,10 +294,10 @@ describe('Application', function () {
 
       app.run();
 
-      assume(subbb.methods.GET).is.instanceOf(Supply);
-      assume(subb.methods.GET).is.instanceOf(Supply);
-      assume(sub.methods.GET).is.instanceOf(Supply);
-      assume(app.methods.GET).is.instanceOf(Supply);
+      assume(subbb._methods.GET).is.instanceOf(Supply);
+      assume(subb._methods.GET).is.instanceOf(Supply);
+      assume(sub._methods.GET).is.instanceOf(Supply);
+      assume(app._methods.GET).is.instanceOf(Supply);
     });
 
     it('returns a middleware function', function () {
@@ -333,7 +333,7 @@ describe('Application', function () {
     it('extracts the params and introduces them on the req.param', function (next) {
       next = assume.plan(3, next);
 
-      app.mount('{bar}/{foo}/another').get(function (req, res, next) {
+      app.path('{bar}/{foo}/another').get(function (req, res, next) {
         assume(req.param).is.a('object');
         assume(req.param.foo).equals('world');
         assume(req.param.bar).equals('hello');
@@ -381,7 +381,7 @@ describe('Magikarp', function () {
 
   describe('#add', function () {
     var app = new Application('appie')
-      , hein = app.mount('hein');
+      , hein = app.path('hein');
 
     it('chains', function () {
       assume(magik.add(app)).equals(magik);

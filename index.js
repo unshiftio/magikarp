@@ -110,7 +110,7 @@ Magikarp.Application = Application;
  * @returns {Application}
  * @api public
  */
-Magikarp.mount = function mount(name, module) {
+Magikarp.path = function path(name, module) {
   var app = new Application(name);
 
   if (!module) return app;
