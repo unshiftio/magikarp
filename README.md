@@ -38,7 +38,12 @@ dependency in your `package.json` file.
 
 - [Installation](#installation)
 - [Usage](#usage)
-  - [magikarp.from](#from)
+  - [magikarp.from](#magikarpfrom)
+  - [magikarp.add](#magikarpadd)
+  - [magikarp.path](#magikarppath)
+  - [magikarp.use](#magikarpuse)
+  - [magikarp.before](#magikarpbefore)
+  - [magikarp.run](#magikarprun)
 - [Application](#application)
   - [API](#api)
     - [get, post, put, delete](#get-post-put-delete)
@@ -118,6 +123,53 @@ var app = magikarp.path('foo');
 
 app.get(function (req, res, next) {
   res.end('hello from foo');
+});
+```
+
+### magikarp.use
+
+Add new middleware layer to the stack. This middleware layer will be run for
+every application and HTTP method. Please do note that `.from`,`.add` and
+`.path` also introduce middleware layers to the stack. So if you want to have
+your middleware for every application, besure to add them before calling any of
+those methods. This actually quite powerful as you can gracefully add more
+layers. 
+
+See [Supply.use](https://github.com/bigpipe/supply#use) for more detailed
+information on how this method works. One thing that might be worth noting is
+that Magikarp is actually a full Supply instance so every method that is on
+Supply should also work for Magikarp. 
+
+```js
+magikarp.use(require('serve-static')(__dirname + '/static/dir'));
+```
+
+### magikarp.before
+
+Same as the [`magikarp.use`](#magikarpuse) method, but it adds the middleware
+layers at the beginnging of the stack instead of at the end.
+
+```js
+magikarp.before('favicon', require('serve-favicon')());
+```
+
+### magikarp.run
+
+This is where the magic happens and we actually start handling the HTTP request.
+
+The method requires 3 arguments:
+
+- **req** The incoming HTTP request.
+- **res** The outgoing HTTP response.
+- **next** Error first continuation callback for when we have no matching
+  routes.
+
+```js
+var http = require('http').createServer(function (req, res) {
+  magikarp.run(req, res, function aww(err) {
+    res.statusCode = err ? 500 : 404;
+    res.end('awww');
+  });
 });
 ```
 
