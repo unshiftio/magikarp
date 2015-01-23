@@ -396,10 +396,32 @@ describe('Magikarp', function () {
   });
 
   it('can be constructed without `new` keyword', function () {
-    var magik = Magikarp(null, { pathname: '/foo' });
+    magik.destroy();
+
+    magik = Magikarp(null, { pathname: '/foo' });
 
     assume(magik.pathname).equals('/foo');
     assume(magik.from).is.a('function');
+  });
+
+  it('correctly access apps with a custom pathname', function (next) {
+    magik.destroy();
+
+    magik = new Magikarp(null, { pathname: '/foo' });
+
+    magik
+    .path('bar')
+    .get(function (req, res, cont) {
+      assume(req.url).equals('/bar/');
+      assume(req.originalUrl).equals('/foo/bar/');
+
+      next();
+    });
+
+    /* istanbul ignore next */
+    magik.run({ url: '/foo/bar/', method: 'GET' }, {}, function () {
+      throw new Error('I should never be called');
+    });
   });
 
   describe('#add', function () {
