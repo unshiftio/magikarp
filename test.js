@@ -210,6 +210,28 @@ describe('Application', function () {
       assume(sub._methods.GET).is.instanceOf(Supply);
       assume(app._methods.GET).is.instanceOf(Supply);
     });
+
+    it('can still add new methods after optimization', function (next) {
+      var context = { foo: 'bar' };
+
+      app
+      .put(function (req, res, done) {})
+      .optimize(context)
+      .get(function (req, res, done) {
+        assume(done).is.a('function');
+        assume(this).equals(context);
+        assume(req).equals('foo');
+        assume(res).equals('bar');
+
+        next();
+      })
+      .put(function (req, res, done) {});
+
+      assume(app._methods.GET.length).equals(1);
+      assume(app._methods.PUT.length).equals(2);
+
+      app.which('/foo', 'GET').method.each('foo', 'bar');
+    });
   });
 
   describe('#mount', function () {
@@ -358,6 +380,7 @@ describe('Magikarp', function () {
     , Magikarp = require('./')
     , Application = Magikarp.Application
     , context = new EventEmitter()
+    , Supply = require('supply')
     , magik;
 
   beforeEach(function () {
@@ -431,6 +454,15 @@ describe('Magikarp', function () {
       magik.run(request, response, function () {
         throw new Error('I should never be called');
       });
+    });
+  });
+
+  describe('#path', function () {
+    it('returns a new application', function () {
+      var banana = magik.path('banana');
+
+      assume(banana).is.instanceOf(Application);
+      assume(banana._methods.GET).is.instanceOf(Supply);
     });
   });
 

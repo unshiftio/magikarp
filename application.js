@@ -1,10 +1,16 @@
 'use strict';
 
-var dollars = require('dollars')
-  , Roete = require('./roete')
+var Roete = require('./roete')
   , Supply = require('supply');
 
+//
+// The HTTP methods that we support.
+//
+var methods = 'GET POST PUT DELETE'.split(' ');
+
 /**
+ * Representation of an Application that is responsible for one section of the
+ * URL's path name.
  *
  * @constructor
  * @param {String} name The pathname/namespace/URL that we should mount upon.
@@ -29,10 +35,15 @@ Application.prototype.constructor = Application;
  * @returns {Fragment}
  * @api public
  */
-dollars.each('GET POST PUT DELETE'.split(' '), function each(method) {
+methods.forEach(function each(method) {
   var application = Application.prototype;
 
   application[method] = application[method.toLowerCase()] = function proxy(fn) {
+    if (this._methods[method] instanceof Supply) {
+      this._methods[method].use(fn);
+      return this;
+    }
+
     this._methods[method] = this._methods[method] || [];
     this._methods[method].push(fn);
 
@@ -83,7 +94,7 @@ Application.prototype.prev = Application.prototype.previous = function prev() {
  * @param {String} url Incoming pathname.
  * @param {String} method HTTP method.
  * @returns {Application}
- * @api public
+ * @api private
  */
 Application.prototype.which = function which(url, method) {
   var match = this.match(url, method)
@@ -95,7 +106,7 @@ Application.prototype.which = function which(url, method) {
   // And 100% on direct match. These are the fast cases.
   //
   if (!match) return;
-  if (!match.url && match.method) return match;
+  if (!match.url && match.method.length) return match;
 
   //
   // If we have a match but have sub-applications we need to check them first to
@@ -105,7 +116,7 @@ Application.prototype.which = function which(url, method) {
     application = this._sub[i];
     matching = application.match(match.url, method);
 
-    if (matching && matching.method) {
+    if (matching && matching.method.length) {
       return matching;
     }
   }
@@ -123,19 +134,25 @@ Application.prototype.which = function which(url, method) {
 Application.prototype.optimize = function optimize(context) {
   var app = this;
 
-  app._methods = dollars.map(app._methods, function assign(handles, method) {
-    if (!Array.isArray(handles)) return handles;
+  app._methods = methods.reduce(function assign(methods, method) {
+    var handles = app._methods[method];
 
-    var supply = new Supply(context);
+    methods[method] = handles;
+    if (handles instanceof Supply) return methods;
 
-    dollars.each(handles, function each(fn) {
-      supply.use(fn);
+    methods[method] = new Supply(context);
+
+    //
+    // We only have handles if we've already been created.
+    //
+    if (handles) handles.forEach(function each(fn) {
+      methods[method].use(fn);
     });
 
-    return supply;
-  });
+    return methods;
+  }, {});
 
-  dollars.each(app._sub, function each(application) {
+  app._sub.forEach(function each(application) {
     application.optimize(context);
   });
 

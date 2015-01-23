@@ -1,7 +1,5 @@
 'use strict';
 
-var dollars = require('dollars');
-
 /**
  * Roete (Route) matching.
  *
@@ -30,6 +28,7 @@ function Roete(url) {
  */
 Roete.prototype.param = function param(name, fn) {
   this._parsers[name] = fn;
+
   return this;
 };
 
@@ -53,7 +52,7 @@ Roete.prototype.parse = function parse(url) {
   // Transform the {} placeholders to an all capturing regular expression so we
   // can start capturing parameters.
   //
-  url = dollars.array.map(url, function each(frag) {
+  url = url.map(function each(frag) {
     return frag.replace(/\{([^\{]+?)\}/g, function replace(match, key) {
       roete._params.push(key);
 

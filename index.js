@@ -1,7 +1,6 @@
 'use strict';
 
 var Application = require('./application')
-  , dollars = require('dollars')
   , Supply = require('supply')
   , path = require('path')
   , url = require('url')
@@ -16,6 +15,9 @@ var Application = require('./application')
  * @api public
  */
 var Magikarp = Supply.extend({
+  //
+  // Required to make construction without `new` keyword possible.
+  //
   constructor: function constr(context, options) {
     if (!this) return new Magikarp(context, options);
 
@@ -28,7 +30,7 @@ var Magikarp = Supply.extend({
   /**
    * Initialize the module.
    *
-   * @param {Object} options
+   * @param {Object} options Additional configuration
    * @api private
    */
   initialize: function initialize(options) {
@@ -45,7 +47,7 @@ var Magikarp = Supply.extend({
   from: function from(directory) {
     var magikarp = this;
 
-    dollars.each(fs.readdirSync(directory), function each(filename) {
+    fs.readdirSync(directory).forEach(function each(filename) {
       var app = path.join(directory, filename);
 
       if (
@@ -69,6 +71,21 @@ var Magikarp = Supply.extend({
   add: function add(application) {
     this.use(application.run(this.provider));
     return this;
+  },
+
+  /**
+   * Create a new application that is added automatically to the magikarp
+   * instance.
+   *
+   * @param {String} name The name/path/URI of the application.
+   * @returns {Application}
+   * @api public
+   */
+  path: function path(name) {
+    var application = new Application(name);
+
+    this.add(application);
+    return application;
   },
 
   /**
