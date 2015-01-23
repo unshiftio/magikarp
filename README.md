@@ -15,8 +15,12 @@
 
 Magikarp is a library for building applications. Not normal applications, but
 path (from URL's) based applications. It doesn't see URL's as routes but as
-application. Every piece of the path is an individual application and these
-applications can be shared, modulized and sliced up in any way you want.
+application. Every section of a patch can be an individual application. These
+applications can be shared and installed from npm, modulized, re-used and sliced
+up in any way imaginable.
+
+Just like Magikarp, you can evolve something as small as route to a really
+powerful beast.
 
 ## Installation
 
@@ -27,20 +31,41 @@ running:
 npm install --save magikarp
 ```
 
-An application can take possession of one or multiple paths.
+The `--save` flag tells `npm` to add the installed version of the module as
+dependency in your `package.json` file.
 
-```
-/appname/
-appname
-appname/{filename}.js
-/appname/{filename}.css
+## Usage
+
+In the following snippets and API examples we assume that you've already created
+a new `Magikarp` instance. If you have not yet, please copy the following
+example:
+
+```js
+var Magikarp = require('magikarp');
 ```
 
-You might have noticed the `{ .. }` placeholders in the URL. These tags will
-extract what ever matches with a catch all regular expression and introduce the
-said name as parameter in the request object. In the example above your request
-will have a `params` object with the key filename with whatever filename it
-should match.
+### Application
+
+#### Routes
+
+An application can be mounted on one or multiple paths. The supplied path should
+be a string that can optionally be pre and suffixed with a `/`. When you omit
+those we will automatically add them back internally.
+
+- `/appname/` would match `/appname/`
+- `appname` would match `/appname/`
+- `/appname` would match `/appname/`
+- `/appname/foo` would match `/appname/foo/`
+
+In order to capture data or "params" from paths you can use special `{ .. }`
+placeholders in the pathnames. These pathnames will be automatically replaced
+with an cat all Regular Expression and introduces the supplied name within the
+curly braces as key with the path value in the `req.param` object.
+
+- `{foo}.js` would match `/hello.js`, `/bar.js` etc.
+- `/static/{type}/{filename}.{ext}` would match `/static/css/file.js`.
+
+The combinations are endless.
 
 ## License
 
