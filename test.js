@@ -458,6 +458,16 @@ describe('Magikarp', function () {
       assume(magik.length).equals(2);
     });
 
+    it('does not read app from directory', function () {
+      magik.from(require('path').join(__dirname, 'fixture'), { deep: false });
+      assume(magik.length).equals(1);
+    });
+
+    it('reads apps from deeply nested structures', function () {
+      magik.from(require('path').join(__dirname, 'fixture'), { nested: true });
+      assume(magik.length).equals(3);
+    });
+
     it('adds the applications', function (next) {
       magik.from(require('path').join(__dirname, 'fixture'));
 

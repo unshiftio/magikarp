@@ -86,10 +86,13 @@ folders that are in the given directory should have an `index.js` file which
 exposes an [Application](#application) instance. All none `.js` files in the
 directory it self will be ignored automatically.
 
-The method requires 1 argument:
+The method accepts 2 arguments:
 
 - **directory** The absolute path to the directory which contains the various of
   applications.
+- **options** An object which allows you to configure how the directory is read:
+  - `deep` Allow one folder within the directory.
+  - `nested` Deeply spider the given directory for js files.
 
 ```js
 magikarp.from(require('path').join(__dirname, 'fixtures'));

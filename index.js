@@ -41,19 +41,26 @@ var Magikarp = Supply.extend({
    * Load in API endpoints from a given directory.
    *
    * @param {String} directory The directory we should search.
+   * @param {Object} options Additional configuration.
    * @returns {Magikarp}
    * @api public
    */
-  from: function from(directory) {
+  from: function from(directory, options) {
     var magikarp = this;
 
-    fs.readdirSync(directory).forEach(function each(filename) {
-      var app = path.join(directory, filename);
+    options = options || {};
+    options.nested = 'nested' in options ? options.nested : false;
+    options.deep = 'deep' in options ? options.deep : true;
 
-      if (
-           '.js' !== path.extname(app)
-        && !fs.statSync(app).isDirectory()
-      ) return /* It's not something that can be required. */;
+    fs.readdirSync(directory).forEach(function each(filename) {
+      var app = path.join(directory, filename)
+        , stat = fs.statSync(app)
+        , dir = stat.isDirectory();
+
+      if (dir) {
+        if (options.nested) return magikarp.from(app, options);
+        if (!options.deep) return;
+      } else if ('.js' !== path.extname(app)) return;
 
       magikarp.add(require(app));
     });
