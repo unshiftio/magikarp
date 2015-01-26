@@ -136,12 +136,12 @@ every application and HTTP method. Please do note that `.from`,`.add` and
 `.path` also introduce middleware layers to the stack. So if you want to have
 your middleware for every application, besure to add them before calling any of
 those methods. This actually quite powerful as you can gracefully add more
-layers. 
+layers.
 
 See [Supply.use](https://github.com/bigpipe/supply#use) for more detailed
 information on how this method works. One thing that might be worth noting is
 that Magikarp is actually a full Supply instance so every method that is on
-Supply should also work for Magikarp. 
+Supply should also work for Magikarp.
 
 ```js
 magikarp.use(require('serve-static')(__dirname + '/static/dir'));
@@ -321,7 +321,7 @@ app.optimize(magikarp.provider);
 ```
 
 It's not hurtful to call the optimize method multiple times and it can be useful
-if you wish to force a custom `this` value for the applications. 
+if you wish to force a custom `this` value for the applications.
 
 ##### run
 
@@ -354,7 +354,7 @@ var app = require('magikarp').path('/dashboard/{id}/')
 app
 .get(require('static-server')(__dirname +'/static'));
 .get(function (req, res, next) {
-  var file = __dirname +'/+ req.param.id +'.html';
+  var file = __dirname +'/'+ req.param.id +'.html';
 
   fs.exists(file, function (exists) {
     if (!exists) return next();
