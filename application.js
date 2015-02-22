@@ -21,7 +21,7 @@ function Application(name) {
 
   Roete.call(this, name);         // Inherit from route.
 
-  this._sub = [];                  // Extra applications.
+  this._sub = [];                 // Extra applications.
   this.parent = null;             // Parent application.
 }
 
